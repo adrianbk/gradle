@@ -66,7 +66,7 @@ public class DefaultBaseRepositoryFactory implements BaseRepositoryFactory {
 
     public MavenArtifactRepository createMavenLocalRepository() {
         MavenArtifactRepository mavenRepository = instantiator.newInstance(DefaultMavenLocalArtifactRepository.class, fileResolver, createPasswordCredentials(), transportFactory,
-                locallyAvailableResourceFinder, artifactFileStore);
+                locallyAvailableResourceFinder, instantiator, artifactFileStore);
         final File localMavenRepository = localMavenRepositoryLocator.getLocalMavenRepository();
         mavenRepository.setUrl(localMavenRepository);
         return mavenRepository;
@@ -91,7 +91,7 @@ public class DefaultBaseRepositoryFactory implements BaseRepositoryFactory {
 
     public MavenArtifactRepository createMavenRepository() {
         return instantiator.newInstance(DefaultMavenArtifactRepository.class, fileResolver, createPasswordCredentials(), transportFactory,
-                locallyAvailableResourceFinder, artifactFileStore);
+                locallyAvailableResourceFinder, instantiator, artifactFileStore);
     }
 
     private PasswordCredentials createPasswordCredentials() {

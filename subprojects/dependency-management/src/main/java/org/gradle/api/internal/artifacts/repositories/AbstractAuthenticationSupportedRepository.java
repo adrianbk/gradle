@@ -18,25 +18,65 @@ package org.gradle.api.internal.artifacts.repositories;
 import groovy.lang.Closure;
 import org.gradle.api.Action;
 import org.gradle.api.artifacts.repositories.AuthenticationSupported;
+import org.gradle.api.artifacts.repositories.AwsCredentials;
 import org.gradle.api.artifacts.repositories.PasswordCredentials;
 import org.gradle.api.internal.ClosureBackedAction;
+import org.gradle.credentials.Credentials;
+import org.gradle.credentials.aws.DefaultAwsCredentials;
+import org.gradle.internal.reflect.Instantiator;
+import org.gradle.util.WrapUtil;
+
+import java.util.Set;
 
 public abstract class AbstractAuthenticationSupportedRepository extends AbstractArtifactRepository implements AuthenticationSupported {
-    private final PasswordCredentials passwordCredentials;
+    private PasswordCredentials credentials;
+    private Credentials alternativeCredentials;
+    private final Instantiator instantiator;
 
-    AbstractAuthenticationSupportedRepository(PasswordCredentials credentials) {
-        this.passwordCredentials = credentials;
+    AbstractAuthenticationSupportedRepository(PasswordCredentials credentials, Instantiator instantiator) {
+        this.credentials = credentials;
+        this.instantiator = instantiator;
+    }
+
+    protected AbstractAuthenticationSupportedRepository(PasswordCredentials passwordCredentials, Credentials alternativeCredentials, Instantiator instantiator) {
+        this.credentials = passwordCredentials;
+        this.alternativeCredentials = alternativeCredentials;
+        this.instantiator = instantiator;
     }
 
     public PasswordCredentials getCredentials() {
-        return passwordCredentials;
+        return credentials;
     }
+
 
     public void credentials(Closure closure) {
         credentials(new ClosureBackedAction<PasswordCredentials>(closure));
     }
 
-    public void credentials(Action<? super PasswordCredentials> action) {
-        action.execute(passwordCredentials);
+    public void credentials(Action<PasswordCredentials> action) {
+        credentials = instantiator.newInstance(DefaultPasswordCredentials.class);
+        action.execute(credentials);
+    }
+
+    public <T extends Credentials> void credentials(Class<T> clazz, Action<? super Credentials> action) {
+        Credentials instance = null;
+        if (clazz == AwsCredentials.class) {
+            instance = instantiator.newInstance(DefaultAwsCredentials.class);
+        } else if (clazz == PasswordCredentials.class) {
+            instance = instantiator.newInstance(DefaultPasswordCredentials.class);
+        }
+        alternativeCredentials = instance;
+        action.execute(alternativeCredentials);
+    }
+
+    public Credentials getAlternativeCredentials() {
+        return this.alternativeCredentials;
+    }
+
+    public Credentials getCredentialsForSchemes(Set<String> schemes) {
+        if (WrapUtil.toSet("s3").containsAll(schemes)) {
+            return getAlternativeCredentials();
+        }
+        return getCredentials();
     }
 }
