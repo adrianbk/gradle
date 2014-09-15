@@ -21,23 +21,15 @@ import org.gradle.api.artifacts.repositories.AwsCredentials
 import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.api.internal.ClosureBackedAction
 import org.gradle.credentials.Credentials
-import org.gradle.credentials.aws.DefaultAwsCredentials
+import org.gradle.internal.credentials.DefaultAwsCredentials
 import org.gradle.internal.reflect.DirectInstantiator
 import org.gradle.internal.reflect.Instantiator
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class AbstractAuthenticationSupportedRepositoryTest extends Specification {
 
     final AbstractAuthenticationSupportedRepository repository = new AuthSupportedRepository(null, new DirectInstantiator())
-
-    def "should default to password credentials"() {
-        Closure cls = {}
-        when:
-        repository.credentials(cls)
-
-        then:
-        repository.credentials instanceof PasswordCredentials
-    }
 
     def "should configure default password credentials using a closure only"() {
         setup:
@@ -87,24 +79,24 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
 
     }
 
+    @Unroll
     def "should instantiate the correct default credential types "() {
         Instantiator instantiator = Mock()
-        def credentials = Mock(expectedCredentials)
         Action action = Mock()
-
-        1 * instantiator.newInstance(expectedCredentials) >> credentials
-        1 * action.execute(credentials)
-
         AuthSupportedRepository repo = new AuthSupportedRepository(null, instantiator)
 
-        expect:
-        repo.credentials(type, action)
-        repo.alternativeCredentials == credentials
+        when:
+        repo.credentials(credentialType, action)
+
+        then:
+        1 * instantiator.newInstance(_) >> credentials
+        1 * action.execute(credentials)
+        check.call(repo)
 
         where:
-        type                || expectedCredentials
-        AwsCredentials      || DefaultAwsCredentials
-        PasswordCredentials || DefaultPasswordCredentials
+        credentialType      | credentials               | check
+        AwsCredentials      | Mock(AwsCredentials)      | { it.alternativeCredentials instanceof AwsCredentials && it.credentials == null }
+        PasswordCredentials | Mock(PasswordCredentials) | { it.alternativeCredentials instanceof PasswordCredentials && it.credentials == null }
     }
 
     def "should use alternative credentials for s3 scheme"() {
@@ -120,6 +112,16 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
 
         then:
         credentials == alternative
+    }
+
+    def "should default both credentials to PasswordCredentials"() {
+        setup:
+        PasswordCredentials pCredentials = Mock()
+        when:
+        def repo = new AuthSupportedRepository(pCredentials, null)
+        then:
+        repo.getCredentials() == pCredentials
+        repo.getAlternativeCredentials() == pCredentials
     }
 
     private void enhanceCredentials(Credentials credentials, String... props) {

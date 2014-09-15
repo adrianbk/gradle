@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.gradle.credentials.aws;
+package org.gradle.internal.credentials;
 
 import org.gradle.api.artifacts.repositories.AwsCredentials;
 

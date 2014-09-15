@@ -67,7 +67,7 @@ public interface AuthenticationSupported {
      * }
      * </pre>
      */
-    void credentials(Action<PasswordCredentials> action);
+    void credentials(Action<? super PasswordCredentials> action);
 
     /**
      * Configures strongly typed credentials for this repository using the supplied action.

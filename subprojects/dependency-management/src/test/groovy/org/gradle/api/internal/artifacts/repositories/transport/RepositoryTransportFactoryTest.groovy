@@ -17,8 +17,9 @@
 package org.gradle.api.internal.artifacts.repositories.transport
 
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.artifacts.repositories.PasswordCredentials
 import org.gradle.api.internal.artifacts.repositories.DefaultPasswordCredentials
-import org.gradle.credentials.aws.DefaultAwsCredentials
+import org.gradle.internal.credentials.DefaultAwsCredentials
 import org.gradle.internal.resource.transport.aws.s3.S3Transport
 import org.gradle.internal.resource.transport.http.HttpTransport
 import org.gradle.internal.resource.transport.sftp.SftpTransport
@@ -60,5 +61,14 @@ class RepositoryTransportFactoryTest extends Specification {
         's3'   | new DefaultAwsCredentials(accessKey: 'a', secretKey: 's') || S3Transport
         'http' | Mock(DefaultPasswordCredentials)                          || HttpTransport
         'sftp' | Mock(DefaultPasswordCredentials)                          || SftpTransport
+    }
+
+    def "should throw when credentials types is invalid"(){
+        when:
+        repositoryTransportFactory.convertPasswordCredentials(new DefaultAwsCredentials())
+
+        then:
+        def ex = thrown(IllegalArgumentException)
+        ex.message == "Credentials must be an instance of: ${PasswordCredentials.class.getCanonicalName()}"
     }
 }

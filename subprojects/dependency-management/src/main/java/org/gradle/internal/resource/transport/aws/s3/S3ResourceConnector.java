@@ -74,6 +74,8 @@ public class S3ResourceConnector implements ExternalResourceLister, ExternalReso
 
     public void upload(Factory<InputStream> sourceFactory, Long contentLength, URI destination) throws IOException {
         LOGGER.debug("Attempting to get upload stream to : {}", destination);
-        s3Client.put(sourceFactory.create(), contentLength, destination);
+        InputStream inputStream = sourceFactory.create();
+        s3Client.put(inputStream, contentLength, destination);
+        inputStream.close();
     }
 }

@@ -22,25 +22,22 @@ import org.gradle.api.artifacts.repositories.AwsCredentials;
 import org.gradle.api.artifacts.repositories.PasswordCredentials;
 import org.gradle.api.internal.ClosureBackedAction;
 import org.gradle.credentials.Credentials;
-import org.gradle.credentials.aws.DefaultAwsCredentials;
+import org.gradle.internal.credentials.DefaultAwsCredentials;
 import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.WrapUtil;
 
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractAuthenticationSupportedRepository extends AbstractArtifactRepository implements AuthenticationSupported {
     private PasswordCredentials credentials;
     private Credentials alternativeCredentials;
     private final Instantiator instantiator;
+    private AtomicBoolean credentialsOverride = new AtomicBoolean(false);
 
     AbstractAuthenticationSupportedRepository(PasswordCredentials credentials, Instantiator instantiator) {
         this.credentials = credentials;
-        this.instantiator = instantiator;
-    }
-
-    protected AbstractAuthenticationSupportedRepository(PasswordCredentials passwordCredentials, Credentials alternativeCredentials, Instantiator instantiator) {
-        this.credentials = passwordCredentials;
-        this.alternativeCredentials = alternativeCredentials;
+        this.alternativeCredentials = credentials;
         this.instantiator = instantiator;
     }
 
@@ -48,13 +45,11 @@ public abstract class AbstractAuthenticationSupportedRepository extends Abstract
         return credentials;
     }
 
-
     public void credentials(Closure closure) {
         credentials(new ClosureBackedAction<PasswordCredentials>(closure));
     }
 
-    public void credentials(Action<PasswordCredentials> action) {
-        credentials = instantiator.newInstance(DefaultPasswordCredentials.class);
+    public void credentials(Action<? super PasswordCredentials> action) {
         action.execute(credentials);
     }
 
@@ -65,8 +60,17 @@ public abstract class AbstractAuthenticationSupportedRepository extends Abstract
         } else if (clazz == PasswordCredentials.class) {
             instance = instantiator.newInstance(DefaultPasswordCredentials.class);
         }
+        overrideDefaultCredentials(instance);
+        action.execute(instance);
+    }
+
+    /**
+     * Implies the user has configured the DSL with a specific type: { credentials(PasswordCredentials){ ... }
+     */
+    private void overrideDefaultCredentials(Credentials instance) {
         alternativeCredentials = instance;
-        action.execute(alternativeCredentials);
+        credentials = null;
+        credentialsOverride.getAndSet(true);
     }
 
     public Credentials getAlternativeCredentials() {
@@ -77,6 +81,6 @@ public abstract class AbstractAuthenticationSupportedRepository extends Abstract
         if (WrapUtil.toSet("s3").containsAll(schemes)) {
             return getAlternativeCredentials();
         }
-        return getCredentials();
+        return getAlternativeCredentials();
     }
 }
