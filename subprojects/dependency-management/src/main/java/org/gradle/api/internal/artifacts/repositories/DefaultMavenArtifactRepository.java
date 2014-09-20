@@ -29,7 +29,6 @@ import org.gradle.internal.component.external.model.ModuleComponentArtifactMetaD
 import org.gradle.internal.reflect.Instantiator;
 import org.gradle.internal.resource.local.FileStore;
 import org.gradle.internal.resource.local.LocallyAvailableResourceFinder;
-import org.gradle.util.WrapUtil;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -43,7 +42,6 @@ public class DefaultMavenArtifactRepository extends AbstractAuthenticationSuppor
     private Object url;
     private List<Object> additionalUrls = new ArrayList<Object>();
     private final LocallyAvailableResourceFinder<ModuleComponentArtifactMetaData> locallyAvailableResourceFinder;
-    private final Instantiator instantiator;
     private final FileStore<ModuleComponentArtifactMetaData> artifactFileStore;
 
     public DefaultMavenArtifactRepository(FileResolver fileResolver, PasswordCredentials credentials, RepositoryTransportFactory transportFactory,
@@ -54,7 +52,6 @@ public class DefaultMavenArtifactRepository extends AbstractAuthenticationSuppor
         this.fileResolver = fileResolver;
         this.transportFactory = transportFactory;
         this.locallyAvailableResourceFinder = locallyAvailableResourceFinder;
-        this.instantiator = instantiator;
         this.artifactFileStore = artifactFileStore;
     }
 
@@ -114,8 +111,7 @@ public class DefaultMavenArtifactRepository extends AbstractAuthenticationSuppor
     }
 
     protected RepositoryTransport getTransport(String scheme) {
-        Set<String> schemes = WrapUtil.toSet(scheme);
-        return transportFactory.createTransport(scheme, getName(), getCredentialsForSchemes(schemes));
+        return transportFactory.createTransport(scheme, getName(), getAlternativeCredentials());
     }
 
     protected LocallyAvailableResourceFinder<ModuleComponentArtifactMetaData> getLocallyAvailableResourceFinder() {

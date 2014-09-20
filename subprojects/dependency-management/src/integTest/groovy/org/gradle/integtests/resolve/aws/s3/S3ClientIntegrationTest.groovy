@@ -29,7 +29,7 @@ class S3ClientIntegrationTest extends Specification {
     final String secret = System.getenv('AWS_SECRET_ACCESS_KEY')
     final String bucketName = System.getenv('GRADLE_S3_BUCKET')
 
-    //TODO - ak - should we test this at all
+    //TODO - figure out integration/stub server test for AWS services
     @Ignore
     def "should perform put get and list on an S3 bucket"() {
         setup:

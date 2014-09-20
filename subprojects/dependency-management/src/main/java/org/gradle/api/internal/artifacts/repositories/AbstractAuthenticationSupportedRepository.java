@@ -24,25 +24,25 @@ import org.gradle.api.internal.ClosureBackedAction;
 import org.gradle.credentials.Credentials;
 import org.gradle.internal.credentials.DefaultAwsCredentials;
 import org.gradle.internal.reflect.Instantiator;
-import org.gradle.util.WrapUtil;
-
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractAuthenticationSupportedRepository extends AbstractArtifactRepository implements AuthenticationSupported {
-    private PasswordCredentials credentials;
+    private PasswordCredentials passwordCredentials;
     private Credentials alternativeCredentials;
     private final Instantiator instantiator;
-    private AtomicBoolean credentialsOverride = new AtomicBoolean(false);
 
-    AbstractAuthenticationSupportedRepository(PasswordCredentials credentials, Instantiator instantiator) {
-        this.credentials = credentials;
-        this.alternativeCredentials = credentials;
+    AbstractAuthenticationSupportedRepository(PasswordCredentials passwordCredentials, Instantiator instantiator) {
+        this.passwordCredentials = passwordCredentials;
+        this.alternativeCredentials = passwordCredentials;
         this.instantiator = instantiator;
     }
 
     public PasswordCredentials getCredentials() {
-        return credentials;
+        if (passwordCredentials == null && alternativeCredentials != null) {
+            throw new IllegalStateException("Password credentials has been overridden by a specific credentials of type ["
+                    + alternativeCredentials.getClass().getName()
+                    + "] Credentials should be accessed using 'getAlternativeCredentials()'");
+        }
+        return passwordCredentials;
     }
 
     public void credentials(Closure closure) {
@@ -50,7 +50,11 @@ public abstract class AbstractAuthenticationSupportedRepository extends Abstract
     }
 
     public void credentials(Action<? super PasswordCredentials> action) {
-        action.execute(credentials);
+        if (passwordCredentials == null) {
+            throw new IllegalStateException("Password credentials is null, most likely an alternative "
+                    + "credentials type has been configured for this repository");
+        }
+        action.execute(passwordCredentials);
     }
 
     public <T extends Credentials> void credentials(Class<T> clazz, Action<? super Credentials> action) {
@@ -69,18 +73,14 @@ public abstract class AbstractAuthenticationSupportedRepository extends Abstract
      */
     private void overrideDefaultCredentials(Credentials instance) {
         alternativeCredentials = instance;
-        credentials = null;
-        credentialsOverride.getAndSet(true);
+        passwordCredentials = null;
     }
 
     public Credentials getAlternativeCredentials() {
-        return this.alternativeCredentials;
-    }
-
-    public Credentials getCredentialsForSchemes(Set<String> schemes) {
-        if (WrapUtil.toSet("s3").containsAll(schemes)) {
-            return getAlternativeCredentials();
+        if (null == alternativeCredentials) {
+            throw new IllegalStateException("This repository has not been configured a specific credentials type "
+                    + "e.g. (credentials(PasswordCredentials){ ... })");
         }
-        return getAlternativeCredentials();
+        return alternativeCredentials;
     }
 }

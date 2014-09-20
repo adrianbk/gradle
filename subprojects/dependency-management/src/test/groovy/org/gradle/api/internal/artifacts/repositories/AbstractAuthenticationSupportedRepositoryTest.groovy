@@ -41,11 +41,12 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
 
         AuthSupportedRepository repo = new AuthSupportedRepository(passwordCredentials, instantiator)
 
-        when:
         Closure cls = {
             username "myUsername"
             password "myPassword"
         }
+
+        when:
         repo.credentials(cls)
 
         then:
@@ -86,20 +87,40 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
         AuthSupportedRepository repo = new AuthSupportedRepository(null, instantiator)
 
         when:
-        repo.credentials(credentialType, action)
+        repo.credentials(credentialType, action) == credentials
 
         then:
         1 * instantiator.newInstance(_) >> credentials
         1 * action.execute(credentials)
-        check.call(repo)
 
         where:
-        credentialType      | credentials               | check
-        AwsCredentials      | Mock(AwsCredentials)      | { it.alternativeCredentials instanceof AwsCredentials && it.credentials == null }
-        PasswordCredentials | Mock(PasswordCredentials) | { it.alternativeCredentials instanceof PasswordCredentials && it.credentials == null }
+        credentialType      | credentials
+        AwsCredentials      | Mock(AwsCredentials)
+        PasswordCredentials | Mock(PasswordCredentials)
     }
 
-    def "should use alternative credentials for s3 scheme"() {
+    def "should throw when credentials have been pre-configured with a specific type"() {
+        Instantiator instantiator = Mock()
+        Action action = Mock()
+        AuthSupportedRepository repo = new AuthSupportedRepository(null, instantiator)
+        1 * instantiator.newInstance(_) >> credentials
+        1 * action.execute(credentials)
+
+        when:
+        repo.credentials(credentialType, action)
+        repo.getCredentials()
+
+        then:
+        def ex = thrown(IllegalStateException)
+        ex.message.startsWith("Password credentials has been overridden by a specific credentials of type [")
+
+        where:
+        credentialType      | credentials
+        AwsCredentials      | Mock(AwsCredentials)
+        PasswordCredentials | Mock(PasswordCredentials)
+    }
+
+    def "should configure aws credentials"() {
         Instantiator instantiator = Mock()
         AuthSupportedRepository repo = new AuthSupportedRepository(null, instantiator)
         def alternative = Mock(AwsCredentials)
@@ -108,7 +129,7 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
         repo.credentials(AwsCredentials, action)
 
         when:
-        def credentials = repo.getCredentialsForSchemes(["s3"] as Set)
+        def credentials = repo.getAlternativeCredentials()
 
         then:
         credentials == alternative
@@ -124,6 +145,21 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
         repo.getAlternativeCredentials() == pCredentials
     }
 
+    def "Should throw on configuring and password credentials is null"() {
+        setup:
+        def repo = new AuthSupportedRepository(null, new DirectInstantiator())
+        def action = new ClosureBackedAction<DefaultPasswordCredentials>({
+            username = 'key'
+            password = 'secret'
+        })
+
+        when:
+        repo.credentials(action)
+        then:
+        def ex = thrown(IllegalStateException)
+        ex.message == "Password credentials is null, most likely an alternative credentials type has been configured for this repository"
+    }
+
     private void enhanceCredentials(Credentials credentials, String... props) {
         props.each { prop ->
             credentials.metaClass."$prop" = { String val ->
@@ -133,7 +169,7 @@ class AbstractAuthenticationSupportedRepositoryTest extends Specification {
     }
 
     class AuthSupportedRepository extends AbstractAuthenticationSupportedRepository {
-        def AuthSupportedRepository(Credentials credentials, Instantiator instantiator) {
+        AuthSupportedRepository(Credentials credentials, Instantiator instantiator) {
             super(credentials, instantiator)
         }
     }
