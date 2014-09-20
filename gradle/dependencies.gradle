@@ -153,15 +153,24 @@ libraries.jmock = [
 libraries.gson = "com.google.code.gson:gson:2.2.4"
 libraries.sshd = "org.apache.sshd:sshd-core:0.10.0"
 
+//libraries.aws = [
+//    'joda-time:joda-time:2.4',
+//    libraries.commons_httpclient,
+//    dependencies.create('com.amazonaws:aws-java-sdk:1.7.13') {
+//        exclude group: 'joda-time', module: 'joda-time'
+//        exclude group: 'commons-codec', module: 'commons-codec'
+//        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+//    }
+//]
+
 libraries.aws = [
-    'joda-time:joda-time:2.4',
-    libraries.commons_httpclient,
-    dependencies.create('com.amazonaws:aws-java-sdk:1.7.13') {
-        exclude group: 'joda-time', module: 'joda-time'
-        exclude group: 'commons-codec', module: 'commons-codec'
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
-    }
-]
+        'com.amazonaws:aws-java-sdk:1.7.13@jar',
+        'joda-time:joda-time:2.4@jar',
+        'commons-logging:commons-logging:1.1.1@jar',
+        'com.fasterxml.jackson.core:jackson-core:2.1.1@jar',
+        'com.fasterxml.jackson.core:jackson-databind:2.1.1@jar',
+        'com.fasterxml.jackson.core:jackson-annotations:2.1.1@jar',
+] + libraries.commons_httpclient
 
 allprojects {
     configurations.all {
