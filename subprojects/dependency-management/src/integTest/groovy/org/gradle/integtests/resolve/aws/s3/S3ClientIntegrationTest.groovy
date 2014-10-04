@@ -34,9 +34,9 @@ import java.security.cert.X509Certificate
 class S3ClientIntegrationTest extends Specification {
 
     public static final String FILE_NAME = "mavenTest.txt"
-    final String accessKey = System.getenv('G_AWS_ACCESS_KEY_ID')
-    final String secret = System.getenv('G_AWS_SECRET_ACCESS_KEY')
-    final String bucketName = System.getenv('G_S3_BUCKET')
+    final String accessKey = System.getenv('G_AWS_ACCESS_KEY_ID') ?: 'gradle-access-key'
+    final String secret = System.getenv('G_AWS_SECRET_ACCESS_KEY') ?: 'gradle-secret-key'
+    final String bucketName = System.getenv('G_S3_BUCKET') ?: 'org.gradle.artifacts'
     S3StubSupport s3StubSupport = new S3StubSupport()
 
     def "should perform put get and list on an S3 bucket"() {
