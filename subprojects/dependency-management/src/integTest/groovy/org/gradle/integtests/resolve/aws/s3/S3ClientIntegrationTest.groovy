@@ -16,34 +16,50 @@
 
 package org.gradle.integtests.resolve.aws.s3
 
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.services.s3.S3ClientOptions
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.S3Object
 import org.apache.commons.io.IOUtils
+import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.ssl.SSLSocketFactory
+import org.apache.http.conn.ssl.TrustStrategy
+import org.gradle.integtests.resolve.aws.stubserver.S3StubSupport
 import org.gradle.internal.resource.transport.aws.s3.S3Client
-import spock.lang.Ignore
 import spock.lang.Specification
+
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
 
 class S3ClientIntegrationTest extends Specification {
 
-    final String accessKey = System.getenv('AWS_ACCESS_KEY_ID')
-    final String secret = System.getenv('AWS_SECRET_ACCESS_KEY')
-    final String bucketName = System.getenv('GRADLE_S3_BUCKET')
+    public static final String FILE_NAME = "mavenTest.txt"
+    final String accessKey = System.getenv('G_AWS_ACCESS_KEY_ID')
+    final String secret = System.getenv('G_AWS_SECRET_ACCESS_KEY')
+    final String bucketName = System.getenv('G_S3_BUCKET')
+    S3StubSupport s3StubSupport = new S3StubSupport()
 
-    //TODO - figure out integration/stub server test for AWS services
-    @Ignore
     def "should perform put get and list on an S3 bucket"() {
         setup:
         String tempDir = System.getProperty("java.io.tmpdir")
         def fileContents = 'This is only a test'
-        S3Client s3Client = new S3Client(accessKey, secret)
-        File file = new File("${tempDir}/mavenTest.txt")
+        File file = new File("${tempDir}/$FILE_NAME")
 
         file.delete()
         file << fileContents
 
+        s3StubSupport.with{
+            stubPutFile(file, "/${bucketName}/maven/release/$FILE_NAME")
+            stubMetaData(file, "/${bucketName}/maven/release/$FILE_NAME")
+            stubGetFile(file, "/${bucketName}/maven/release/$FILE_NAME")
+            stubListFile(file, bucketName)
+        }
+        S3Client s3Client = new S3Client(accessKey, secret)
+        configureAwsClientForStub(s3Client.amazonS3Client)
+
         when:
         def stream = new FileInputStream(file)
-        def uri = new URI("s3://${bucketName}/maven/release/mavenTest.txt")
+        def uri = new URI("s3://${bucketName}/maven/release/$FILE_NAME")
         s3Client.put(stream, file.length(), uri)
 
         then:
@@ -64,4 +80,23 @@ class S3ClientIntegrationTest extends Specification {
             assert it.contains(".")
         }
     }
+
+    private void configureAwsClientForStub(AmazonS3Client amazonS3Client) {
+        amazonS3Client.setEndpoint(s3StubSupport.endpoint.toString())
+        amazonS3Client.setS3ClientOptions(new S3ClientOptions().withPathStyleAccess(true));
+        Scheme scheme = new Scheme("https", s3StubSupport.endpoint.port, buildSSLSocketFactory());
+        amazonS3Client.client.httpClient.getConnectionManager().getSchemeRegistry().register(scheme);
+    }
+
+    private SSLSocketFactory buildSSLSocketFactory() {
+        TrustStrategy ts = new TrustStrategy() {
+            @Override
+            public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+                return true
+            }
+        }
+        return new SSLSocketFactory(ts, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+    }
+
+
 }

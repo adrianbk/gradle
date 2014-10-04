@@ -1,9 +1,14 @@
 apply plugin: "groovy"
 
-import org.gradle.build.*
+import org.gradle.build.JarJar
 
 configurations {
     mvn3Input
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
 }
 
 dependencies {
@@ -32,6 +37,20 @@ dependencies {
     //this dependency is necessary to run IvySFtpResolverIntegrationTest on ibm jdk
     //integTestRuntime "org.bouncycastle:bcprov-jdk15:1.46@jar"
 
+    testCompile 'com.github.adrianbk:http-stub-server-standalone:1.0.1@jar'
+    testCompile 'org.codehaus.jackson:jackson-mapper-asl:1.9.8@jar'
+    testCompile 'org.codehaus.jackson:jackson-core-asl:1.9.8@jar'
+    testCompile 'com.github.adrianbk:http-stub-server-core:1.0.1@jar'
+
+
+    testCompile('org.codehaus.groovy.modules.http-builder:http-builder:0.7.1@jar')
+    testCompile('net.sf.json-lib:json-lib:2.3:jdk15@jar')
+    testCompile('xml-resolver:xml-resolver:1.2@jar')
+//            {
+//        exclude group: ' org.apache.httpcomponents', module: 'httpclient'
+//        exclude group: 'org.codehaus.groovy', module: 'groovy'
+//    }
+
     testFixturesCompile project(":internalIntegTesting")
 }
 
@@ -49,8 +68,8 @@ task jarJarMaven3(type: JarJar) {
     avoidConflictingPlexusComponents(it)
 }
 
-if(isWindows && javaVersion.java5){
-    compileTestGroovy.options.fork (memoryMaximumSize: '512m')
+if (isWindows && javaVersion.java5) {
+    compileTestGroovy.options.fork(memoryMaximumSize: '512m')
 }
 
 classpathManifest.dependsOn jarJarMaven3 //see GRADLE-2521
