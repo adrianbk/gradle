@@ -33,10 +33,19 @@ class MavenRemoteRepositoryFactory implements Factory<RemoteRepository> {
     public RemoteRepository create() {
         RemoteRepository remoteRepository = new RemoteRepository();
         remoteRepository.setUrl(artifactRepository.getUrl().toString());
-
-        PasswordCredentials credentials = artifactRepository.getCredentials();
-        String username = credentials.getUsername();
-        String password = credentials.getPassword();
+        String username = null;
+        String password = null;
+        /**
+         * TODO - ignore this try-catch for an initial review of publishing
+         * It's a sure sign the state and exceptions introduced in org.gradle.api.internal.artifacts.repositories.AbstractAuthenticationSupportedRepository are not a good idea.
+         */
+        try {
+            PasswordCredentials passwordCredentials = artifactRepository.getCredentials();
+            username = passwordCredentials.getUsername();
+            password = passwordCredentials.getPassword();
+        } catch (IllegalStateException e) {
+            System.out.println("");
+        }
 
         if (username != null || password != null) {
             Authentication authentication = new Authentication();
@@ -44,7 +53,6 @@ class MavenRemoteRepositoryFactory implements Factory<RemoteRepository> {
             authentication.setPassword(password);
             remoteRepository.addAuthentication(authentication);
         }
-
         return remoteRepository;
     }
 }
