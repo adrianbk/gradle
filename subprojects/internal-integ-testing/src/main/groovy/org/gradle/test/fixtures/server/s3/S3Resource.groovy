@@ -44,9 +44,13 @@ class S3Resource implements RemoteResource {
         s3StubSupport.stubGetFile(file, relativeFilePath())
     }
 
+    void expectSnapshotPublish() {
+        s3StubSupport.allowPutUndeterminedNamedFile(file, relativeFilePath())
+    }
+
     @Override
     void expectDownloadMissing() {
-
+        throwNotImplemented()
     }
 
     @Override
@@ -56,22 +60,26 @@ class S3Resource implements RemoteResource {
 
     @Override
     void expectMetadataRetrieveMissing() {
-
+        throwNotImplemented()
     }
 
     @Override
     void expectDownloadBroken() {
-
+        throwNotImplemented()
     }
 
     @Override
     void expectMetadataRetrieveBroken() {
-
+        throwNotImplemented()
     }
 
     def relativeFilePath() {
         String absolute = file.absolutePath
         String base = "/${bucket}$repositoryPath"
         absolute.substring(absolute.indexOf(base), absolute.length())
+    }
+
+    def throwNotImplemented(){
+        throw new RuntimeException("Method: not implemented")
     }
 }

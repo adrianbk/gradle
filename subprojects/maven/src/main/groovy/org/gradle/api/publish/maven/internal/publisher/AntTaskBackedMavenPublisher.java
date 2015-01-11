@@ -35,10 +35,10 @@ public class AntTaskBackedMavenPublisher extends AbstractAntTaskBackedMavenPubli
     private RepositoryTransportFactory repositoryTransportFactory;
 
     public AntTaskBackedMavenPublisher(Factory<LoggingManagerInternal> loggingManagerFactory, Factory<File> temporaryDirFactory,
-                                       RepositoryTransportFactory repositoryTransportFactory) {
+                                       RepositoryTransportFactory repositoryTransportFactory, WagonRegistry wagonRegistry) {
         super(loggingManagerFactory, temporaryDirFactory);
         this.repositoryTransportFactory = repositoryTransportFactory;
-        wagonRegistry = new WagonRegistry();
+        this.wagonRegistry = wagonRegistry;
     }
 
     protected void postConfigure(CustomDeployTask task, MavenArtifactRepository artifactRepository) {

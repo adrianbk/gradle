@@ -22,6 +22,7 @@ import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.artifacts.repositories.transport.RepositoryTransportFactory;
+import org.gradle.api.publication.maven.internal.WagonRegistry;
 import org.gradle.api.publish.internal.PublishOperation;
 import org.gradle.api.publish.maven.MavenPublication;
 import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal;
@@ -46,8 +47,11 @@ public class PublishToMavenRepository extends DefaultTask {
 
     private MavenPublicationInternal publication;
     private MavenArtifactRepository repository;
+    private WagonRegistry wagonRegistry;
 
     public PublishToMavenRepository() {
+
+        this.wagonRegistry = new WagonRegistry();
         // Allow the publication to participate in incremental build
         getInputs().files(new Callable<FileCollection>() {
             public FileCollection call() throws Exception {
@@ -147,8 +151,11 @@ public class PublishToMavenRepository extends DefaultTask {
         new PublishOperation(publication, repository) {
             @Override
             protected void publish() throws Exception {
-                MavenPublisher antBackedPublisher = new AntTaskBackedMavenPublisher(getLoggingManagerFactory(), getTemporaryDirFactory(),
-                        getRepositoryTransportFactory());
+                MavenPublisher antBackedPublisher = new AntTaskBackedMavenPublisher(
+                        getLoggingManagerFactory(),
+                        getTemporaryDirFactory(),
+                        getRepositoryTransportFactory(),
+                        wagonRegistry);
                 MavenPublisher staticLockingPublisher = new StaticLockingMavenPublisher(antBackedPublisher);
                 MavenPublisher validatingPublisher = new ValidatingMavenPublisher(staticLockingPublisher);
                 validatingPublisher.publish(publication.asNormalisedPublication(), repository);

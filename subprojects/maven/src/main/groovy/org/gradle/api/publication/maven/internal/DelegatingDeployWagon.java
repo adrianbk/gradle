@@ -34,6 +34,8 @@ import org.gradle.api.GradleException;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.internal.artifacts.repositories.transport.RepositoryTransportFactory;
 import org.gradle.api.publication.maven.internal.ant.CustomDeployTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +56,7 @@ public abstract class DelegatingDeployWagon implements Wagon {
     private TransferEventSupport transferEventSupport = new TransferEventSupport();
     private Repository mutatingRepository;
     protected AbstractDeployDelegate delegate;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DelegatingDeployWagon.class);
 
     public void createDelegate(DeployerDelegateFactory<? extends AbstractDeployDelegate> deployerDelegateFactory,
                                CustomDeployTask task,
@@ -71,6 +74,11 @@ public abstract class DelegatingDeployWagon implements Wagon {
         this.transferEventSupport.fireTransferInitiated(transferEvent(resource, TRANSFER_INITIATED, REQUEST_GET));
         this.transferEventSupport.fireTransferStarted(transferEvent(resource, TRANSFER_STARTED, REQUEST_GET));
         try {
+            if (!destination.exists()) {
+                LOGGER.warn("Wagon deployment supplied a file [{}] which does not exist, forcing create.", destination.getAbsolutePath());
+                destination.getParentFile().mkdirs();
+                destination.createNewFile();
+            }
             if (!delegate.getAndWriteFile(destination, resourceName)) {
                 throw new ResourceDoesNotExistException(String.format("'%s' does not exist", resourceName));
             }
@@ -86,7 +94,6 @@ public abstract class DelegatingDeployWagon implements Wagon {
         Resource resource = new Resource(resourceName);
         this.transferEventSupport.fireTransferInitiated(transferEvent(resource, TRANSFER_INITIATED, REQUEST_PUT));
         this.transferEventSupport.fireTransferStarted(transferEvent(resource, TRANSFER_STARTED, REQUEST_PUT));
-
         try {
             delegate.putFile(file, resourceName);
         } catch (IOException e) {
@@ -244,7 +251,7 @@ public abstract class DelegatingDeployWagon implements Wagon {
     }
 
     private void throwNotImplemented(String s) {
-        throw new GradleException("This wagon does not support the method:" + s);
+        throw new GradleException("This wagon does not yet support the method:" + s);
     }
 
     private TransferEvent transferEvent(Resource resource, int eventType, int requestType) {

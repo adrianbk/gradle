@@ -17,26 +17,27 @@
 
 package org.gradle.api.publish.maven
 
-import spock.lang.Ignore
-import spock.lang.IgnoreIf
+import org.junit.Ignore
+import spock.lang.Unroll
 
 class MavenPublishS3IntegrationTest extends AbstractMavenPublishIntegTest {
 
-    @IgnoreIf({ System.getProperty("user.name") != "adrianbk" })
-    def "can publish to an S3 Maven repository"() {
+    @Unroll
+    @Ignore
+    def "can publish to a #repoType S3 Maven repository"() {
         given:
         settingsFile << 'rootProject.name = "publish"'
         buildFile << """
             apply plugin: 'java'
             apply plugin: 'maven-publish'
 
-            version = '2'
+            version = '2.0${repoType.toUpperCase() == "SNAPSHOT" ? "-SNAPSHOT" : ""}'
             group = 'org.group.name'
 
             publishing {
               repositories {
                     maven {
-                        url "s3://${System.getenv('G_S3_BUCKET')}/maven/release/"
+                        url "s3://${System.getenv('G_S3_BUCKET')}/maven/$repoType/"
                         credentials(AwsCredentials) {
                             accessKey "${System.getenv('G_AWS_ACCESS_KEY_ID')}"
                             secretKey "${System.getenv('G_AWS_SECRET_ACCESS_KEY')}"
@@ -51,30 +52,32 @@ class MavenPublishS3IntegrationTest extends AbstractMavenPublishIntegTest {
             }
         """
 
-
         when:
         executer.withArguments("-d")
 
         then:
         succeeds 'publish'
+
+        where:
+        repoType << ['release', 'snapshot']
     }
 
-    @IgnoreIf({ System.getProperty("user.name") != "adrianbk" })
     @Ignore
-    def "can publish to an Maven repository"() {
+    @Unroll
+    def "can publish to an http Maven #repoType repository"() {
         given:
         settingsFile << 'rootProject.name = "publish"'
         buildFile << """
             apply plugin: 'java'
             apply plugin: 'maven-publish'
 
-            version = '2'
+            version = '2.0${repoType.toUpperCase() == "SNAPSHOT" ? "-SNAPSHOT" : ""}'
             group = 'org.group.name'
 
             publishing {
               repositories {
                     maven {
-                        url "http://127.0.0.1:8081/artifactory/libs-release-local"
+                        url "http://127.0.0.1:8081/artifactory/libs-$repoType-local"
                         credentials {
                             username "admin"
                             password "password"
@@ -92,5 +95,8 @@ class MavenPublishS3IntegrationTest extends AbstractMavenPublishIntegTest {
         executer.withArguments("-d")
         expect:
         succeeds 'publish'
+
+        where:
+        repoType << ['release', 'snapshot']
     }
 }

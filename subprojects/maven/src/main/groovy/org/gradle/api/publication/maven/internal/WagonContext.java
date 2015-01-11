@@ -38,4 +38,6 @@ public class WagonContext<C extends DelegatingDeployWagon, D extends AbstractDep
     public String getProtocol() {
         return protocol;
     }
+
+
 }

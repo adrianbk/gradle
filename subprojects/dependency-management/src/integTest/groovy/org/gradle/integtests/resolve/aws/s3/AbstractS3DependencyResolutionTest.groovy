@@ -62,7 +62,7 @@ abstract class AbstractS3DependencyResolutionTest extends AbstractDependencyReso
         }
     }
 
-    String mavenAwsRepoDsl(){
+    String mavenAwsRepoDsl() {
         """
         repositories {
             maven {
@@ -76,3 +76,4 @@ abstract class AbstractS3DependencyResolutionTest extends AbstractDependencyReso
         """
     }
 }
+

@@ -35,6 +35,7 @@ public class CustomDeployTask extends DeployTask implements CustomInstallDeployT
 
     @Override
     public void doExecute() {
+        //TODO - Can we get rid of this for publications using org.gradle.api.internal.artifacts.repositories.transport.RepositoryTransport's
         LoggingHelper.injectLogger(getContainer(), getProject());
         super.doExecute();
     }
