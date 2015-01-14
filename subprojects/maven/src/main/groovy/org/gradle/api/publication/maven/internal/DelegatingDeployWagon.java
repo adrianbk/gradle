@@ -75,7 +75,7 @@ public abstract class DelegatingDeployWagon implements Wagon {
         this.transferEventSupport.fireTransferStarted(transferEvent(resource, TRANSFER_STARTED, REQUEST_GET));
         try {
             if (!destination.exists()) {
-                LOGGER.warn("Wagon deployment supplied a file [{}] which does not exist, forcing create.", destination.getAbsolutePath());
+                LOGGER.info("Wagon deployment supplied a file [{}] which does not exist, forcing create.", destination.getAbsolutePath());
                 destination.getParentFile().mkdirs();
                 destination.createNewFile();
             }
