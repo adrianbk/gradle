@@ -22,8 +22,9 @@ import org.gradle.language.objectivec.ObjectiveCLanguageIncrementalBuildIntegrat
 import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
 
-@Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
 class ObjectiveCppLanguageIncrementalBuildIntegrationTest  extends ObjectiveCLanguageIncrementalBuildIntegrationTest{
+
+    @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
     @Override
     IncrementalHelloWorldApp getHelloWorldApp() {
         return new ObjectiveCppHelloWorldApp()

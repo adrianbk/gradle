@@ -22,10 +22,10 @@ import org.gradle.nativeplatform.fixtures.app.MixedObjectiveCHelloWorldApp
 import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
 
-//TODO find a better name
 @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
-class MixedObjectiveCIntegrationTest extends AbstractNativeLanguageIntegrationTest{
+class MixedObjectiveCIntegrationTest extends AbstractNativeLanguageIntegrationTest {
 
+    //TODO find a better name
     @Override
     HelloWorldApp getHelloWorldApp() {
         return new MixedObjectiveCHelloWorldApp()

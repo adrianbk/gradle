@@ -33,7 +33,7 @@ class CrossVersionPerformanceTestRunnerTest extends ResultSpecification {
     final mostRecentRelease = new ReleasedVersionDistributions().mostRecentFinalRelease.version.version
     final currentVersionBase = GradleVersion.current().baseVersion.version
 
-    @Requires(TestPrecondition.NOT_PULL_REQUEST_BUILD)
+    @Requires(TestPrecondition.NOT_TRAVIS_CI_BUILD)
     def "runs test and builds results"() {
         given:
         def runner = runner()
@@ -78,7 +78,7 @@ class CrossVersionPerformanceTestRunnerTest extends ResultSpecification {
         0 * reporter._
     }
 
-    @Requires(TestPrecondition.NOT_PULL_REQUEST_BUILD)
+    @Requires(TestPrecondition.NOT_TRAVIS_CI_BUILD)
     def "can use 'last' baseline version to refer to most recently released version"() {
         given:
         def runner = runner()
@@ -91,7 +91,7 @@ class CrossVersionPerformanceTestRunnerTest extends ResultSpecification {
         results.baselineVersions*.version == ['1.0', mostRecentRelease]
     }
 
-    @Requires(TestPrecondition.NOT_PULL_REQUEST_BUILD)
+    @Requires(TestPrecondition.NOT_TRAVIS_CI_BUILD)
     def "ignores baseline version if it has the same base as the version under test"() {
         given:
         def runner = runner()

@@ -17,9 +17,12 @@
 package org.gradle
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
+import org.gradle.util.Requires
+import org.gradle.util.TestPrecondition
 
 class NativeServicesIntegrationTest extends AbstractIntegrationSpec {
 
+    @Requires(TestPrecondition.NOT_TRAVIS_CI_BUILD)
     def "native services libs are unpacked to gradle user home dir"() {
         given:
         def nativeDir = new File(executer.gradleUserHomeDir, "native")

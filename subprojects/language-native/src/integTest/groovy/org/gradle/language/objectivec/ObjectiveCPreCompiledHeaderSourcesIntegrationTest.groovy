@@ -24,6 +24,7 @@ import org.gradle.util.TestPrecondition
 
 @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
 class ObjectiveCPreCompiledHeaderSourcesIntegrationTest extends AbstractNativePreCompiledHeaderIntegrationTest {
+
     @Override
     IncrementalHelloWorldApp getApp() {
         return new ObjectiveCHelloWorldApp()

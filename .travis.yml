@@ -1,15 +1,56 @@
+sudo: false
+cache:
+  directories:
+    - $HOME/.m2
+    - $HOME/.gradle/wrapper
+    - $HOME/.gradle/caches/jars-1
+    - $HOME/.gradle/caches/modules-2
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - clang
+    - g++
+    - g++-multilib
+    - gcc-multilib
+    - gobjc-multilib
+    - gobjc++-multilib
 language: java
+#before_install:
+#  - sudo apt-get update -qq
+#  - sudo apt-get install -y clang
+#  - sudo apt-get install -y g++
+#  - sudo apt-get install g++-multilib
+#  - sudo apt-get install gcc-multilib
+#  - sudo apt-get install gobjc-multilib
+#  - sudo apt-get install gobjc++-multilib
 jdk:
   - oraclejdk7
 env:
   global:
-  - TERM=dumb
   - GRADLE_OPTS="-Xmx1024m -Xms256m -XX:MaxPermSize=256m -XX:+CMSClassUnloadingEnabled"
   matrix:
-  - CI_TEST_SPLIT=1
-  - CI_TEST_SPLIT=2
-  - CI_TEST_SPLIT=3
-  - CI_TEST_SPLIT=4
+  - BUILD=prCommitBuild1
+  - BUILD=prCommitBuild2
+  - BUILD=prCommitBuild3
+  - BUILD=prIntegTestBuild1
+  - BUILD=prIntegTestBuild2
+  - BUILD=prIntegTestBuild3
+  - BUILD=prIntegTestBuild4
+  - BUILD=prIntegTestBuild5
+  - BUILD=prIntegTestBuild6
+  - BUILD=prIntegTestBuild7
+  - BUILD=prIntegTestBuild8
+  - BUILD=prIntegTestBuild9
+  - BUILD=prIntegTestBuild10
+  - BUILD=prIntegTestBuild11
+  - BUILD=prIntegTestBuild12
+  - BUILD=prIntegTestBuild13
+  - BUILD=prIntegTestBuild14
+  - BUILD=prIntegTestBuild15
+  - BUILD=prIntegTestBuild16
+  - BUILD=prIntegTestBuild17
 branches:
   only:
     - master

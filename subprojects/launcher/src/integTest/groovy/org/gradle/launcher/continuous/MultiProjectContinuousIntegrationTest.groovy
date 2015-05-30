@@ -16,6 +16,9 @@
 
 package org.gradle.launcher.continuous
 
+import org.gradle.util.Requires
+import org.gradle.util.TestPrecondition
+
 class MultiProjectContinuousIntegrationTest extends Java7RequiringContinuousIntegrationTest {
 
     def upstreamSource, downstreamSource
@@ -118,6 +121,7 @@ class MultiProjectContinuousIntegrationTest extends Java7RequiringContinuousInte
     }
 
     // here to put more stress on parallel execution
+    @Requires(TestPrecondition.NOT_TRAVIS_CI_BUILD)
     def "reasonable sized multi-project"() {
         given:
         def extraProjectNames = (0..100).collect { "project$it" }

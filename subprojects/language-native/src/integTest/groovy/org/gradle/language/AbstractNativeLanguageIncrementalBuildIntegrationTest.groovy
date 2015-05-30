@@ -35,8 +35,8 @@ import static org.gradle.nativeplatform.fixtures.ToolChainRequirement.GccCompati
 import static org.gradle.nativeplatform.fixtures.ToolChainRequirement.VisualCpp
 import static org.gradle.util.TextUtil.escapeString
 
+@Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
 abstract class AbstractNativeLanguageIncrementalBuildIntegrationTest extends AbstractInstalledToolChainIntegrationSpec {
-
     IncrementalHelloWorldApp app
     String mainCompileTask
     String libraryCompileTask

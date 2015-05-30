@@ -46,6 +46,9 @@ class SonarRunnerSmokeIntegrationTest extends MultiVersionIntegrationSpec {
         warningLogMessages
     }
 
+    @Requires(TestPrecondition.NOT_TRAVIS_CI_BUILD)
+//    org.jruby.rack.RackInitializationException:
+//    No such file or directory - /tmp/Jetty_0_0_0_0_0_sonar.server.3.2.3.2.war____.zwa88/webapp/WEB-INF/config/environments/test.rb
     def "execute 'sonarRunner' task"() {
         given:
         executer.withDeprecationChecksDisabled() // sonar.dynamicAnalysis is deprecated since SonarQube 4.3
