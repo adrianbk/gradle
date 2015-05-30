@@ -22,8 +22,9 @@ task stopHeartBeat << {
 }
 
 class Heartbeat implements Runnable {
-    int frequency = 8 * 60 * 1000
+    int frequency = 5 * 60 * 1000
     def logger
+    Clock clock
 
     public Heartbeat(logger) {
         this.logger = logger
@@ -31,9 +32,10 @@ class Heartbeat implements Runnable {
 
     @Override
     public void run() {
+        clock = new Clock()
         boolean beating = true
         while (beating) {
-            logger.lifecycle(" [heartbeat] ")
+            logger.lifecycle(" [heartbeat:  ${clock.getTime()}] ")
             try {
                 Thread.sleep(frequency)
             } catch (InterruptedException e) {
@@ -44,33 +46,100 @@ class Heartbeat implements Runnable {
     }
 }
 
-def matrixSize = 4
-def splits = (1..matrixSize).collect { [] }
-project.subprojects.asList().eachWithIndex { project, i ->
-    splits[(i % matrixSize)] << project
+
+def integTestBuckets = [
+
+    [':modelCore', ':announce', ':antlr', ':internalIntegTesting', ':internalTesting', ':maven', ':messaging',
+     ':performance', ':platformBase', ':platformJvm',':buildComparison', ':buildInit', ':cli', ':codeQuality'],
+
+
+    [':docs', ':ear', ':ide', ':ideNative', ':ivy', ':jacoco', ':javascript', ':jetty', ':languageGroovy', ':languageJava', ':languageJvm',
+     ':launcher', ':languageNative', ':platformNative', ':testingNative', ':native'],
+
+
+    ['platformPlay'],
+
+    [':dependencyManagement', ':distributions', ':core', ':toolingApi'],
+
+    //wrapper:publishLocalArchives
+    [':modelGroovy', ':pluginDevelopment', ':pluginUse', ':publish', ':scala', ':signing', ':sonar',
+     ':openApi', ':osgi', ':toolingApiBuilders', ':ui', ':wrapper', ':languageScala', ':diagnostics'],
+
+    [':plugins', ':integTest'],
+
+    /*
+    Suspect - appears to hang:
+    :resourcesSftp:integTest
+    [heartbeat:  25 mins 0.016 secs]
+    [heartbeat:  30 mins 0.017 secs]
+    [heartbeat:  35 mins 0.02 secs]
+    [heartbeat:  40 mins 0.021 secs]
+    [heartbeat:  45 mins 0.022 secs]
+    [heartbeat:  50 mins 0.024 secs]
+*/
+    [':baseServices', ':baseServicesGroovy', ':reporting', ':resources', ':resourcesHttp', ':resourcesS3', ':resourcesSftp']
+
+]
+
+def integTestSplits = integTestBuckets.collect { it.collect { p -> project(p) } }
+assert integTestSplits.flatten().size() == project.subprojects.size(): "All projects should be included"
+
+integTestSplits.eachWithIndex { List<Project> bucket, int i ->
+    createPrBuildType(i, bucket, 'IntegTest', ['integTest'])
 }
 
-splits.eachWithIndex { List<Project> bucket, int i ->
-    def index = i + 1
-    def testTask = project.tasks.create("testSplit${index}", {
-        ext.projectNames = bucket.collect { it.name }
-    })
+def commitBucketCount = 1
+def commitSplits = (1..commitBucketCount).collect { [] }
+project.subprojects.asList().eachWithIndex { project, i ->
+    commitSplits[(i % commitBucketCount)] << project
+}
 
-    bucket.each { Project project ->
-        def checkTask = project.tasks.getByName('check')
-        if (checkTask) {
-            testTask.dependsOn(checkTask)
-        }
-    }
-    project.getExtensions().buildTypes."prBuild${index}"("startHeartBeat", testTask.name, "stopHeartBeat")
+commitSplits.eachWithIndex { List<Project> bucket, int i ->
+    createPrBuildType(i, bucket, 'Commit', ['codeQuality', 'test'])
 }
 
 gradle.taskGraph.whenReady { graph ->
-    def task = graph.getAllTasks()?.find { it.name.contains('testSplit') }
+    def task = graph.getAllTasks()?.find { it.name.startsWith('split') }
     if (task) {
         logger.quiet("============================================")
-        logger.quiet("${task.name} configured to test the following projects: ")
+        logger.quiet("Split Task: ${task.name} configured to test the following projects: ")
         task.projectNames.each { logger.quiet("${it}") }
         logger.quiet("============================================")
     }
+}
+
+/**
+ * Create a pull request build type for a single split
+ * @param i the zero based index for the split
+ * @param projects - the projects included in the given split
+ * @param name - the name of the build type
+ * @param dependantTasks - the tasks that this build type will depend on
+ */
+private void createPrBuildType(int i, List<Project> projects, String name, List<String> dependantTasks) {
+    def index = i + 1
+    def testTask = project.tasks.create(name: "split${name}${index}", group: 'pr', {
+        ext.projectNames = projects.collect { it.name }
+    })
+
+    def copyTestResults = project.tasks.create(name: "split${name}${index}CopyTestReports", group: 'pr')
+
+    projects.each { Project project ->
+        dependantTasks.each {
+            def dependant = project.tasks.findByPath(it)
+            if (dependant) {
+                if (dependant instanceof Test) {
+                    //Create a task to copy the test results
+                    CopySpec copyTestTaskTestResults = project.tasks.create(name: "${dependant.name}CopyTestReports", type: Copy, group: 'pr', {
+                        from file(dependant.reports.getJunitXml().destination)
+                        into("${project.rootDir}/shippable/testresults/")
+                    })
+                    copyTestResults.dependsOn copyTestTaskTestResults
+                }
+                testTask.dependsOn(dependant)
+            }
+        }
+    }
+
+    //Include 'copyTestResults.name' once this issue is resolved https://github.com/Shippable/support/issues/1525
+    project.getExtensions().buildTypes."pr${name}Build${index}"("clean", "startHeartBeat", testTask.name, "stopHeartBeat")
 }

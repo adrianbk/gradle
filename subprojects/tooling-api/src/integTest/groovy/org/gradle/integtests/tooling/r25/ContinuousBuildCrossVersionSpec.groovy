@@ -19,7 +19,10 @@ package org.gradle.integtests.tooling.r25
 import org.gradle.integtests.tooling.fixture.ContinuousBuildToolingApiSpecification
 import org.gradle.tooling.ProjectConnection
 import org.gradle.tooling.model.build.BuildEnvironment
+import org.gradle.util.Requires
+import org.gradle.util.TestPrecondition
 
+@Requires(TestPrecondition.NOT_HOSTED_CI)
 class ContinuousBuildCrossVersionSpec extends ContinuousBuildToolingApiSpecification {
 
     def "can run continuous build with tooling api"() {

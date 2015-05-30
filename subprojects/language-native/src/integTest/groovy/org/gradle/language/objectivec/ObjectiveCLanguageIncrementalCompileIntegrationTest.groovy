@@ -29,6 +29,7 @@ class ObjectiveCLanguageIncrementalCompileIntegrationTest extends AbstractNative
         return new ObjectiveCHelloWorldApp()
     }
 
+    @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
     def "recompiles only source file that imported changed header file"() {
         given:
         sourceFile << """
@@ -51,6 +52,7 @@ class ObjectiveCLanguageIncrementalCompileIntegrationTest extends AbstractNative
         outputs.recompiledFile sourceFile
     }
 
+    @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
     def "source is always recompiled if it imported header via macro"() {
         given:
         sourceFile << """
@@ -88,6 +90,7 @@ class ObjectiveCLanguageIncrementalCompileIntegrationTest extends AbstractNative
         outputs.recompiledFile sourceFile
     }
 
+    @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
     def "recompiles source file when transitively imported header file is changed"() {
         given:
         def transitiveHeaderFile = file("src/main/headers/transitive.h") << """

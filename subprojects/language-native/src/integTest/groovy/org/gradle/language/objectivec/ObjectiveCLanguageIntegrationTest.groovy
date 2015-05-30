@@ -22,7 +22,7 @@ import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
 
 @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
-class ObjectiveCLanguageIntegrationTest extends AbstractNativeLanguageIntegrationTest{
+class ObjectiveCLanguageIntegrationTest extends AbstractNativeLanguageIntegrationTest {
 
     @Override
     HelloWorldApp getHelloWorldApp() {

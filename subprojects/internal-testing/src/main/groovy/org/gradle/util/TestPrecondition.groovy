@@ -131,8 +131,8 @@ enum TestPrecondition implements org.gradle.internal.Factory<Boolean> {
     SMART_TERMINAL({
         System.getenv("TERM")?.toUpperCase() != "DUMB"
     }),
-    NOT_PULL_REQUEST_BUILD({
-        System.getenv("TRAVIS")?.toUpperCase() != "TRUE"
+    NOT_HOSTED_CI({
+        System.getenv("SHIPPABLE")?.toUpperCase() != "TRUE"
     });
 
     /**

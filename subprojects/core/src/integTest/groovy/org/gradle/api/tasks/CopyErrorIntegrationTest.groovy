@@ -74,7 +74,7 @@ The following types/formats are supported:
     }
 
     @Test
-    @Requires(TestPrecondition.FILE_PERMISSIONS)
+    @Requires([TestPrecondition.FILE_PERMISSIONS, TestPrecondition.NOT_HOSTED_CI])
     public void reportsUnreadableSourceDir() {
         TestFile dir = testFile('src').createDir()
         def oldPermissions = dir.permissions

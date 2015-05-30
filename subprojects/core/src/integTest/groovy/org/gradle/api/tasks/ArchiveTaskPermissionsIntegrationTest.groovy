@@ -91,7 +91,7 @@ class ArchiveTaskPermissionsIntegrationTest extends AbstractIntegrationSpec {
 
     }
 
-    @Requires(TestPrecondition.FILE_PERMISSIONS)
+    @Requires([TestPrecondition.FILE_PERMISSIONS, TestPrecondition.NOT_HOSTED_CI])
     @Unroll
     def "file and directory permissions are preserved for unpacked #taskName archives"() {
         given:
@@ -126,7 +126,7 @@ class ArchiveTaskPermissionsIntegrationTest extends AbstractIntegrationSpec {
     def "file and directory permissions are not preserved when dealing with #taskName archives on OS with no permission support"() {
         given:
         TestFile testDir = createDir('root') {
-            def testDir = testdir{
+            def testDir = testdir {
                 def testFile = file('reference.txt')
                 assertTrue testFile.setReadOnly()
             }

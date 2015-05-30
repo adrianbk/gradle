@@ -30,7 +30,7 @@ import spock.lang.Timeout
 import spock.util.concurrent.PollingConditions
 
 @Timeout(120)
-@Requires(TestPrecondition.JDK7_OR_LATER)
+@Requires([TestPrecondition.JDK7_OR_LATER, TestPrecondition.NOT_HOSTED_CI])
 @ToolingApiVersion(ToolingApiVersions.SUPPORTS_RICH_PROGRESS_EVENTS)
 @TargetGradleVersion(GradleVersions.SUPPORTS_CONTINUOUS)
 class PlayContinuousBuildCrossVersionSpec extends ContinuousBuildToolingApiSpecification {

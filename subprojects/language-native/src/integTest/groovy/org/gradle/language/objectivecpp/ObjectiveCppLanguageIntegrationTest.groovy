@@ -25,6 +25,7 @@ import org.gradle.util.TestPrecondition
 @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
 class ObjectiveCppLanguageIntegrationTest extends AbstractNativeLanguageIntegrationTest {
 
+    @Requires(TestPrecondition.OBJECTIVE_C_SUPPORT)
     @Override
     HelloWorldApp getHelloWorldApp() {
         return new ObjectiveCppHelloWorldApp()

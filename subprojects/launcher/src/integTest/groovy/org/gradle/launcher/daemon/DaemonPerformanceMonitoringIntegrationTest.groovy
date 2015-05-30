@@ -21,8 +21,11 @@ package org.gradle.launcher.daemon
 import org.gradle.integtests.fixtures.daemon.DaemonIntegrationSpec
 import org.gradle.launcher.daemon.server.health.DaemonStatus
 import org.gradle.test.fixtures.file.LeaksFileHandles
+import org.gradle.util.Requires
+import org.gradle.util.TestPrecondition
 
 @LeaksFileHandles
+@Requires(TestPrecondition.NOT_HOSTED_CI)
 class DaemonPerformanceMonitoringIntegrationTest extends DaemonIntegrationSpec {
 
     def setup() {

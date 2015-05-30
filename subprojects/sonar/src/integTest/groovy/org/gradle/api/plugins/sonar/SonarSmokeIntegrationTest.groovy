@@ -19,17 +19,18 @@ package org.gradle.api.plugins.sonar
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.integtests.fixtures.TestResources
 import org.gradle.internal.classloader.ClasspathUtil
+import org.gradle.test.fixtures.file.LeaksFileHandles
 import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
 import org.gradle.test.fixtures.server.http.ServletContainer
 import org.gradle.util.AvailablePortFinder
-import org.gradle.test.fixtures.file.LeaksFileHandles
 import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
 import org.junit.Rule
 import spock.lang.AutoCleanup
 import spock.lang.Shared
 
-@Requires(TestPrecondition.JDK7_OR_EARLIER)
+@Requires([TestPrecondition.JDK7_OR_EARLIER, TestPrecondition.NOT_HOSTED_CI])
+
 class SonarSmokeIntegrationTest extends AbstractIntegrationSpec {
     @Shared
     AvailablePortFinder portFinder = AvailablePortFinder.createPrivate()
@@ -78,9 +79,9 @@ sonar.embeddedDatabase.port=$databasePort
         // the wrong class loader.
         when:
         executer.requireGradleHome()
-                .withArgument("-PserverUrl=http://localhost:${container.port}")
-                .withArgument("-PdatabaseUrl=jdbc:h2:tcp://localhost:$databasePort/mem:sonartest")
-                .withTasks("build", "sonarAnalyze").run()
+            .withArgument("-PserverUrl=http://localhost:${container.port}")
+            .withArgument("-PdatabaseUrl=jdbc:h2:tcp://localhost:$databasePort/mem:sonartest")
+            .withTasks("build", "sonarAnalyze").run()
 
         then:
         noExceptionThrown()

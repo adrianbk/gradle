@@ -19,8 +19,8 @@ package org.gradle.sonar.runner
 import org.gradle.integtests.fixtures.MultiVersionIntegrationSpec
 import org.gradle.integtests.fixtures.TargetVersions
 import org.gradle.integtests.fixtures.TestResources
-import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
 import org.gradle.test.fixtures.file.LeaksFileHandles
+import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
 import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
 import org.junit.Rule
@@ -46,6 +46,7 @@ class SonarRunnerSmokeIntegrationTest extends MultiVersionIntegrationSpec {
         warningLogMessages
     }
 
+    @Requires(TestPrecondition.NOT_HOSTED_CI)
     def "execute 'sonarRunner' task"() {
         given:
         executer.withDeprecationChecksDisabled() // sonar.dynamicAnalysis is deprecated since SonarQube 4.3
