@@ -4,3 +4,4 @@ if [ "$TRAVIS_PULL_REQUEST_FIXME" == "false" ]; then
 else
   TERM=xterm ./gradlew $BUILD -S --continue --console plain
 fi
+
