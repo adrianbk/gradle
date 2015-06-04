@@ -5,3 +5,4 @@ else
   TERM=xterm ./gradlew $BUILD -S --continue --console plain
 fi
 
+
