@@ -131,5 +131,5 @@ private void createPrBuildType(int i, List<Project> projects, String name, List<
     }
 
     //Include 'copyTestResults.name' once this issue is resolved https://github.com/Shippable/support/issues/1525
-    project.getExtensions().buildTypes."pr${name}Build${index}"("clean", "startHeartBeat", testTask.name, 'copyTestResults.name', "stopHeartBeat")
+    project.getExtensions().buildTypes."pr${name}Build${index}"("clean", "startHeartBeat", testTask.name, copyTestResults.name, "stopHeartBeat")
 }
