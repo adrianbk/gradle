@@ -1,7 +1,5 @@
 #Include [reset_minion] in a commit message to clear the cache and build on a pristine environment
-
 #cache: true
-#  - if [[ $SHIPPABLE_JDK_VERSION == "oraclejdk7" ]] ; then export JAVA_HOME="/usr/lib/jvm/java-7-oracle"; export PATH="$PATH:/usr/lib/jvm/java-7-oracle/bin"; export java_path="/usr/lib/jvm/java-7-oracle/jre/bin/java"; fi
 
 before_install:
   - sudo apt-get update
@@ -23,13 +21,14 @@ env:
   - GRADLE_OPTS="-Xmx1024m -Xms256m -XX:MaxPermSize=256m -XX:+CMSClassUnloadingEnabled"
   matrix:
   - BUILD=prCommitBuild1
-  - BUILD=prIntegTestBuild7
   - BUILD=prIntegTestBuild1
   - BUILD=prIntegTestBuild2
   - BUILD=prIntegTestBuild3
   - BUILD=prIntegTestBuild4
   - BUILD=prIntegTestBuild5
   - BUILD=prIntegTestBuild6
+  - BUILD=prIntegTestBuild7
+  - BUILD=prIntegTestBuild8
 branches:
   only:
     - shippable

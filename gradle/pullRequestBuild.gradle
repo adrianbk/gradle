@@ -53,32 +53,22 @@ def integTestBuckets = [
      ':performance', ':platformBase', ':platformJvm',':buildComparison', ':buildInit', ':cli', ':codeQuality'],
 
 
-    [':docs', ':ear', ':ide', ':ideNative', ':ivy', ':jacoco', ':javascript', ':jetty', ':languageGroovy', ':languageJava', ':languageJvm',
+    [':docs', ':ear', ':ide', ':ideNative', ':ivy', ':jacoco', ':javascript', ':jetty', ':languageGroovy', ':languageJvm',
      ':launcher', ':languageNative', ':platformNative', ':testingNative', ':native'],
 
 
     ['platformPlay'],
 
-    [':dependencyManagement', ':distributions', ':core', ':toolingApi'],
+    [':dependencyManagement', ':core', ':toolingApi'],
 
-    //wrapper:publishLocalArchives
     [':modelGroovy', ':pluginDevelopment', ':pluginUse', ':publish', ':scala', ':signing', ':sonar',
      ':openApi', ':osgi', ':toolingApiBuilders', ':ui', ':wrapper', ':languageScala', ':diagnostics'],
 
     [':plugins', ':integTest'],
 
-    /*
-    Suspect - appears to hang:
-    :resourcesSftp:integTest
-    [heartbeat:  25 mins 0.016 secs]
-    [heartbeat:  30 mins 0.017 secs]
-    [heartbeat:  35 mins 0.02 secs]
-    [heartbeat:  40 mins 0.021 secs]
-    [heartbeat:  45 mins 0.022 secs]
-    [heartbeat:  50 mins 0.024 secs]
-*/
-    [':baseServices', ':baseServicesGroovy', ':reporting', ':resources', ':resourcesHttp', ':resourcesS3', ':resourcesSftp']
+    [':baseServices', ':baseServicesGroovy', ':reporting', ':resources', ':resourcesHttp', ':resourcesS3', ':resourcesSftp'],
 
+    [':distributions', ':languageJava']
 ]
 
 def integTestSplits = integTestBuckets.collect { it.collect { p -> project(p) } }
