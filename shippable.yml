@@ -12,6 +12,7 @@ before_install:
   - sudo apt-get install -y --no-upgrade gnustep
   - sudo apt-get install -y --no-upgrade gnustep-devel
   - sudo apt-get install -y --no-upgrade haveged
+  - sudo service haveged start
   - if [[ $SHIPPABLE_JDK_VERSION == "oraclejdk7" ]] ; then export JAVA_HOME="/usr/lib/jvm/java-7-oracle"; export PATH="$PATH:/usr/lib/jvm/java-7-oracle/bin"; export java_path="/usr/lib/jvm/java-7-oracle/jre/bin/java"; fi
 language: java
 jdk:
